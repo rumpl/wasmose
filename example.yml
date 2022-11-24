@@ -1,0 +1,6 @@
+modules:
+  first:
+    name: fs.wasm
+    dirs:
+      - source: /Users/rumpl/hack/wasmose
+        target: /
