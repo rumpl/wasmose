@@ -2,5 +2,15 @@ modules:
   first:
     name: fs.wasm
     dirs:
-      - source: /Users/rumpl/hack/wasmose
+      - source: /Users/rumpl/hack/wasmose/crates/cli
+        target: /
+  firs2:
+    name: fs.wasm
+    dirs:
+      - source: /Users/rumpl/hack/wasmose/crates/cli
+        target: /
+  first3:
+    name: fs.wasm
+    dirs:
+      - source: /Users/rumpl/hack/wasmose/crates/cli
         target: /

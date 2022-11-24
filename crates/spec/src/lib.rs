@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fs, path::Path};
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 #[derive(Default, Debug, Serialize, Deserialize)]
@@ -22,13 +22,12 @@ pub struct Dir {
 
 impl Spec {
     pub fn from_file<T: AsRef<Path>>(file: T) -> Result<Self> {
-        let data = fs::read_to_string(file).context("reading file")?;
-
-        Self::deserialize(data)
+        let d = fs::read_to_string(file)?;
+        Self::deserialize(d)
     }
 
     pub fn deserialize(s: String) -> Result<Self> {
-        let spec: Spec = serde_yaml::from_str(&s)?;
+        let spec = serde_yaml::from_str(&s)?;
         Ok(spec)
     }
 }
