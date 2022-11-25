@@ -7,3 +7,5 @@ members = [
     "crates/wasmtime-shim",
     "crates/runtime"
 ]
+
+exclude = ["fs"]
