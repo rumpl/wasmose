@@ -20,7 +20,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    args.push(module.name.clone());
+    args.push(module.name);
 
     let output = Command::new("wasmedge").args(args).output()?;
 

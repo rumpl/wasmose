@@ -23,7 +23,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    args.push(module.name.clone());
+    args.push(module.name);
 
     let mut child = Command::new("wasmtime")
         .stdout(Stdio::inherit())

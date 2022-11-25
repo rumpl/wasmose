@@ -37,7 +37,7 @@ impl Runtime {
 
         if let Some(child_stdin) = child.stdin.as_mut() {
             let data = serde_yaml::to_string(module)?;
-            child_stdin.write_all(&data.as_bytes())?;
+            child_stdin.write_all(data.as_bytes())?;
 
             child.wait()?;
         } else {
