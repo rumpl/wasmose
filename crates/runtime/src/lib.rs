@@ -36,10 +36,17 @@ impl Runtime {
     }
 
     pub fn run(&self, spec: Spec) -> Result<()> {
+        let mut pad = 0;
+        spec.modules.iter().for_each(|(id, _)| {
+            if pad < id.len() {
+                pad = id.len();
+            }
+        });
+
         thread::scope(|s| {
             for (id, module) in spec.modules {
                 s.spawn(move |_| {
-                    self.run_module(id, &module).unwrap();
+                    self.run_module(id, pad + 2, &module).unwrap();
                 });
             }
         })
@@ -48,8 +55,8 @@ impl Runtime {
         Ok(())
     }
 
-    pub fn run_module(&self, id: String, module: &Module) -> Result<()> {
-        let id = colored(id);
+    pub fn run_module(&self, id: String, pad: usize, module: &Module) -> Result<()> {
+        let id = colored(format!("{}:", id));
 
         let mut child = Command::new(format!("{}-shim", self.runtime))
             .stdin(Stdio::piped())
@@ -68,7 +75,7 @@ impl Runtime {
                 reader
                     .lines()
                     .filter_map(|line| line.ok())
-                    .for_each(|line| println!("{id}: {line}"));
+                    .for_each(|line| println!("{id:pad$} {line}"));
             }
         } else {
             bail!("unable to get child stdin");
