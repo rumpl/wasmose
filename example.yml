@@ -14,3 +14,5 @@ modules:
     dirs:
       - source: /Users/rumpl/hack/wasmose/crates/cli
         target: /
+    environment:
+      NAME: VALUE

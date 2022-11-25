@@ -5,6 +5,10 @@ use walkdir::WalkDir;
 fn main() {
     let arguments: Vec<String> = env::args().collect();
 
+    if let Ok(val) = env::var("NAME") {
+        println!("got env var: {}", val)
+    }
+
     let root_dir = if arguments.len() == 1 {
         "/"
     } else {

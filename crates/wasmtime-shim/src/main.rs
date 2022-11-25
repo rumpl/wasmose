@@ -23,6 +23,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
+    if let Some(env_vars) = &module.environment {
+        for (k, v) in env_vars {
+            args.push(String::from("--env"));
+            args.push(format!("{}={}", k, v));
+        }
+    }
+
     args.push(module.name);
 
     let mut child = Command::new("wasmtime")

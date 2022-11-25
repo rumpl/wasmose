@@ -12,6 +12,7 @@ pub struct Spec {
 pub struct Module {
     pub name: String,
     pub dirs: Option<Vec<Dir>>,
+    pub environment: Option<HashMap<String, String>>,
 }
 
 #[derive(Default, Debug, Serialize, Deserialize)]
