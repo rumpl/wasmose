@@ -4,5 +4,6 @@ members = [
     "crates/spec",
     "crates/cli",
     "crates/wasmedge-shim",
-    "crates/wasmtime-shim"
+    "crates/wasmtime-shim",
+    "crates/runtime"
 ]

@@ -1,9 +1,10 @@
 use std::fs;
-use std::io::Write;
+
 use std::path::PathBuf;
-use std::process::{Command, Stdio};
 
 use clap::Parser;
+use runtime::RuntimeLoader;
+use spec::SpecLoader;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -22,18 +23,21 @@ fn main() {
         String::from("wasmtime")
     };
 
-    let mut child = Command::new(format!("{}-shim", runtime))
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .spawn()
-        .unwrap();
+    let r = RuntimeLoader::runtime(runtime);
+    let data = fs::read_to_string(cli.file).unwrap();
+    let spec = SpecLoader::deserialize(data).unwrap();
+    r.run(spec).unwrap();
 
-    let child_stdin = child.stdin.as_mut().unwrap();
+    // let mut child = Command::new(format!("{}-shim", runtime))
+    //     .stdin(Stdio::piped())
+    //     .stdout(Stdio::inherit())
+    //     .spawn()
+    //     .unwrap();
 
-    let data = fs::read(cli.file).unwrap();
-    child_stdin.write_all(&data).unwrap();
+    // let child_stdin = child.stdin.as_mut().unwrap();
 
-    let output = child.wait_with_output().unwrap();
+    // let data = fs::read(cli.file).unwrap();
+    // child_stdin.write_all(&data).unwrap();
 
-    println!("{}", String::from_utf8_lossy(&output.stdout));
+    // child.wait().unwrap();
 }

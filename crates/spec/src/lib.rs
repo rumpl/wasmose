@@ -20,14 +20,27 @@ pub struct Dir {
     pub target: String,
 }
 
-impl Spec {
-    pub fn from_file<T: AsRef<Path>>(file: T) -> Result<Self> {
+pub struct SpecLoader {}
+
+impl SpecLoader {
+    pub fn from_file<T: AsRef<Path>>(file: T) -> Result<Spec> {
         let d = fs::read_to_string(file)?;
         Self::deserialize(d)
     }
 
-    pub fn deserialize(s: String) -> Result<Self> {
+    pub fn deserialize(s: String) -> Result<Spec> {
+        let spec = serde_yaml::from_str(&s)?;
+        Ok(spec)
+    }
+
+    pub fn deserialize_module(s: String) -> Result<Module> {
         let spec = serde_yaml::from_str(&s)?;
         Ok(spec)
     }
 }
+
+pub struct RunOptions {
+    pub runtime: String,
+}
+
+impl Spec {}
