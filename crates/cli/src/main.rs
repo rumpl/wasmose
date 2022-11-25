@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::fs;
 
 use std::path::PathBuf;
@@ -15,7 +16,7 @@ struct Cli {
     file: PathBuf,
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
     let runtime = if let Some(runtime) = cli.runtime {
         runtime
@@ -24,20 +25,9 @@ fn main() {
     };
 
     let r = RuntimeLoader::runtime(runtime);
-    let data = fs::read_to_string(cli.file).unwrap();
-    let spec = SpecLoader::deserialize(data).unwrap();
-    r.run(spec).unwrap();
+    let data = fs::read_to_string(cli.file)?;
+    let spec = SpecLoader::deserialize(data)?;
+    r.run(spec)?;
 
-    // let mut child = Command::new(format!("{}-shim", runtime))
-    //     .stdin(Stdio::piped())
-    //     .stdout(Stdio::inherit())
-    //     .spawn()
-    //     .unwrap();
-
-    // let child_stdin = child.stdin.as_mut().unwrap();
-
-    // let data = fs::read(cli.file).unwrap();
-    // child_stdin.write_all(&data).unwrap();
-
-    // child.wait().unwrap();
+    Ok(())
 }

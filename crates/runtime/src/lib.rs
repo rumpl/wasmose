@@ -1,7 +1,7 @@
 use std::io::Write;
 use std::process::{Command, Stdio};
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 use crossbeam_utils::thread;
 use spec::{Module, Spec};
 pub struct Runtime {
@@ -19,7 +19,7 @@ impl Runtime {
         thread::scope(|s| {
             for module in modules {
                 s.spawn(move |_| {
-                    self.run_module(module);
+                    self.run_module(module).unwrap();
                 });
             }
         })
@@ -28,20 +28,23 @@ impl Runtime {
         Ok(())
     }
 
-    pub fn run_module(&self, module: &Module) {
+    pub fn run_module(&self, module: &Module) -> Result<()> {
         let mut child = Command::new(format!("{}-shim", self.runtime))
             .stdin(Stdio::piped())
             .stdout(Stdio::inherit())
             .stderr(Stdio::inherit())
-            .spawn()
-            .unwrap();
+            .spawn()?;
 
-        let child_stdin = child.stdin.as_mut().unwrap();
+        if let Some(child_stdin) = child.stdin.as_mut() {
+            let data = serde_yaml::to_string(module)?;
+            child_stdin.write_all(&data.as_bytes())?;
 
-        let data = serde_yaml::to_string(module).unwrap();
-        child_stdin.write_all(&data.as_bytes()).unwrap();
+            child.wait()?;
+        } else {
+            bail!("unable to get child stdin");
+        }
 
-        child.wait().unwrap();
+        Ok(())
     }
 }
 
