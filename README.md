@@ -2,7 +2,9 @@
 
 Silly compose-like runner for wasm modules
 
-# Testing
+wasmose -> wasm compose
+
+## Testing
 
 First build the `fs.wasm` module:
 
