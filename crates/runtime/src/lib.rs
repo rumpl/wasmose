@@ -1,11 +1,33 @@
-use std::io::Write;
-use std::process::{Command, Stdio};
-
 use anyhow::{bail, Result};
+use colored::{Color, Colorize};
 use crossbeam_utils::thread;
+use rand::Rng;
 use spec::{Module, Spec};
+
+use std::{
+    io::{BufRead, BufReader, Write},
+    process::{Command, Stdio},
+};
 pub struct Runtime {
     runtime: String,
+}
+
+fn colored(id: String) -> colored::ColoredString {
+    let colors = vec![
+        Color::Red,
+        Color::Green,
+        Color::Yellow,
+        Color::Blue,
+        Color::Magenta,
+        Color::Cyan,
+    ];
+
+    let mut rng = rand::thread_rng();
+
+    let random_string_index: usize = rng.gen_range(0..colors.len());
+    let color = colors[random_string_index];
+
+    id.color(color)
 }
 
 impl Runtime {
@@ -14,12 +36,10 @@ impl Runtime {
     }
 
     pub fn run(&self, spec: Spec) -> Result<()> {
-        let modules = spec.modules.values();
-
         thread::scope(|s| {
-            for module in modules {
+            for (id, module) in spec.modules {
                 s.spawn(move |_| {
-                    self.run_module(module).unwrap();
+                    self.run_module(id, &module).unwrap();
                 });
             }
         })
@@ -28,18 +48,28 @@ impl Runtime {
         Ok(())
     }
 
-    pub fn run_module(&self, module: &Module) -> Result<()> {
+    pub fn run_module(&self, id: String, module: &Module) -> Result<()> {
+        let id = colored(id);
+
         let mut child = Command::new(format!("{}-shim", self.runtime))
             .stdin(Stdio::piped())
-            .stdout(Stdio::inherit())
+            .stdout(Stdio::piped())
             .stderr(Stdio::inherit())
             .spawn()?;
 
-        if let Some(child_stdin) = child.stdin.as_mut() {
+        if let Some(mut child_stdin) = child.stdin.take() {
             let data = serde_yaml::to_string(module)?;
             child_stdin.write_all(data.as_bytes())?;
+            drop(child_stdin);
 
-            child.wait()?;
+            if let Some(out) = child.stdout.take() {
+                let reader = BufReader::new(out);
+
+                reader
+                    .lines()
+                    .filter_map(|line| line.ok())
+                    .for_each(|line| println!("{id}: {line}"));
+            }
         } else {
             bail!("unable to get child stdin");
         }

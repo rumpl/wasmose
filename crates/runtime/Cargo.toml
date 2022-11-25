@@ -7,6 +7,8 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.66"
+colored = "2.0.0"
 crossbeam-utils = "0.8.14"
+rand = "0.8.5"
 serde_yaml = "0.9.14"
 spec = { path = "../spec"}
