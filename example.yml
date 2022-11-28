@@ -1,18 +1,18 @@
 modules:
-  my-serivce:
+  my-service-name:
     name: fs.wasm
     dirs:
-      - source: /Users/rumpl/hack/wasmose/
+      - source: /Users/rumpl/hack/wasmose/crates/cli
         target: /
-  dabase:
+  database:
     name: fs.wasm
     dirs:
-      - source: /Users/rumpl/hack/wasmose/
+      - source: /Users/rumpl/hack/wasmose/crates/cli
         target: /
-  frontend-proxy:
+  proxy:
     name: fs.wasm
     dirs:
-      - source: /Users/rumpl/hack/wasmose/
+      - source: /Users/rumpl/hack/wasmose/crates/cli
         target: /
     environment:
       NAME: VALUE

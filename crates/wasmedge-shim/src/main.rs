@@ -1,10 +1,14 @@
+use spec::{Module, SpecLoader};
 use std::{
     error::Error,
     io::{self, Read},
-    process::Command,
 };
-
-use spec::SpecLoader;
+use wasmedge_sdk::{
+    config::{
+        CommonConfigOptions, ConfigBuilder, HostRegistrationConfigOptions, RuntimeConfigOptions,
+    },
+    params, Vm,
+};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut stdin = io::stdin();
@@ -12,26 +16,54 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     stdin.read_to_string(&mut s)?;
     let module = SpecLoader::deserialize_module(s)?;
-    let mut args = vec![];
-    if let Some(dirs) = &module.dirs {
-        for dir in dirs {
-            args.push(String::from("--dir"));
-            args.push(format!("{}:{}", dir.target, dir.source))
-        }
-    }
 
+    run_module(&module)
+}
+
+fn run_module(module: &Module) -> Result<(), Box<dyn Error>> {
+    let common_options = CommonConfigOptions::default()
+        .bulk_memory_operations(true)
+        .multi_value(true)
+        .mutable_globals(true)
+        .non_trap_conversions(true)
+        .reference_types(true)
+        .sign_extension_operators(true)
+        .simd(true);
+
+    let runtime_options = RuntimeConfigOptions::default().max_memory_pages(1024);
+
+    let host_options = HostRegistrationConfigOptions::default().wasi(true);
+
+    let config = ConfigBuilder::new(common_options)
+        .with_runtime_config(runtime_options)
+        .with_host_registration_config(host_options)
+        .build()?;
+
+    let mut env: Option<Vec<&str>> = None;
+    let envs: Vec<String>;
     if let Some(env_vars) = &module.environment {
-        for (k, v) in env_vars {
-            args.push(String::from("--env"));
-            args.push(format!("{}={}", k, v));
-        }
+        envs = env_vars
+            .iter()
+            .map(|(k, v)| format!("{}={}", k, v))
+            .collect();
+        env = Some(envs.iter().map(AsRef::as_ref).collect());
     }
 
-    args.push(module.name);
+    let mut preopens: Option<Vec<&str>> = None;
+    let directories: Vec<String>;
+    if let Some(dirs) = &module.dirs {
+        directories = dirs
+            .iter()
+            .map(|dir| format!("{}:{}", dir.target, dir.source))
+            .collect();
+        preopens = Some(directories.iter().map(AsRef::as_ref).collect());
+    }
 
-    let output = Command::new("wasmedge").args(args).output()?;
+    let mut vm = Vm::new(Some(config))?;
+    let mut wasi_module = vm.wasi_module()?;
+    wasi_module.initialize(None, env, preopens);
 
-    print!("{}", String::from_utf8_lossy(&output.stdout));
+    vm.run_func_from_file(&module.name, "_start", params!())?;
 
     Ok(())
 }
