@@ -1,18 +1,21 @@
 modules:
   my-service-name:
-    name: fs.wasm
+    module: fs.wasm
     dirs:
       - source: /Users/rumpl/hack/wasmose/crates/cli
         target: /
+
   database:
-    name: fs.wasm
+    module: fs.wasm
     dirs:
       - source: /Users/rumpl/hack/wasmose/crates/cli
         target: /
+
   proxy:
-    name: fs.wasm
+    module: fs.wasm
     dirs:
       - source: /Users/rumpl/hack/wasmose/crates/cli
         target: /
     environment:
       NAME: VALUE
+      MY_VAR: this is a string

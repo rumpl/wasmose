@@ -9,4 +9,4 @@ edition = "2021"
 anyhow = "1.0.66"
 spec = { path = "../spec" }
 wasmedge-macro = "0.3.0"
-wasmedge-sdk = {version = "0.7.1", features = ["aot", "async", "wasi_crypto", "wasi_nn"] }
+wasmedge-sdk = {version = "0.7.1", features = ["aot", "wasi_crypto", "wasi_nn"] }
