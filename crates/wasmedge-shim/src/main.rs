@@ -2,6 +2,7 @@ use spec::{Module, SpecLoader};
 use std::{
     error::Error,
     io::{self, Read},
+    process::ExitCode,
 };
 use wasmedge_sdk::{
     config::{
@@ -10,17 +11,17 @@ use wasmedge_sdk::{
     params, Vm,
 };
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<ExitCode, Box<dyn Error>> {
     let mut stdin = io::stdin();
     let mut s = String::new();
 
     stdin.read_to_string(&mut s)?;
     let module = SpecLoader::deserialize_module(s)?;
 
-    run_module(&module)
+    std::process::exit(run_module(&module)? as i32);
 }
 
-fn run_module(module: &Module) -> Result<(), Box<dyn Error>> {
+fn run_module(module: &Module) -> Result<u32, Box<dyn Error>> {
     let common_options = CommonConfigOptions::default()
         .bulk_memory_operations(true)
         .multi_value(true)
@@ -62,8 +63,7 @@ fn run_module(module: &Module) -> Result<(), Box<dyn Error>> {
     let mut vm = Vm::new(Some(config))?;
     let mut wasi_module = vm.wasi_module()?;
     wasi_module.initialize(None, env, preopens);
-
     vm.run_func_from_file(&module.name, "_start", params!())?;
 
-    Ok(())
+    Ok(wasi_module.exit_code())
 }
